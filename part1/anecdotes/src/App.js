@@ -1,6 +1,37 @@
 import { useState } from 'react'
 
-const points = Array(7).fill(0)
+// General helper method that takes an array and returns
+// index of highest value in the array
+const indexOfMax = (array) => {
+  if (array.length === 0) {
+    return -1
+  }
+
+  var maxIndex = 0
+  var max = array[0]
+
+  for (var i = 0; i < array.length; i++) {
+    if (array[i] > max) {
+      max = array[i]
+      maxIndex = i
+    }
+  }
+  
+  return maxIndex
+}
+
+const DisplayAnecdote = (props) => {
+  return (
+    <>
+      <p>
+        {props.text}
+      </p>
+      <p>
+        Votes: {props.votes}
+      </p>
+    </>
+  )
+}
 
 const App = () => {
   const anecdotes = [
@@ -12,16 +43,46 @@ const App = () => {
     'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.',
     'Programming without an extremely heavy use of console.log is same as if a doctor would refuse to use x-rays or blood tests when diagnosing patients.'
   ]
-   
+  
+  const n = anecdotes.length
   const [selected, setSelected] = useState(0)
+  const [votes, setVotes] = useState(Array(n).fill(0))
+
+  const nextAction = () => {
+    var next = Math.floor(Math.random() * n)
+    setSelected(next)
+  }
+
+  var maxIndex = indexOfMax(Object.values(votes))
+
+  const voteAction = () => {
+    console.log(votes, "Voted!")
+    const copy = {...votes}
+    copy[selected] += 1
+    setVotes(copy)
+  }
 
   return (
-    <div>
-      {anecdotes[selected]}
+    <>
+      <h1>
+        Anecdote of the day
+      </h1>
       <p>
-        <button onClick={() => setSelected(selected + 1)}> Next </button>
+        < DisplayAnecdote text={anecdotes[selected]} votes={votes[selected]} />
       </p>
-    </div>
+      <p>
+        <button onClick={voteAction}> Vote </button>
+        <button onClick={nextAction}> Next Anecdote </button>
+      </p>
+      <h1>
+        {console.log("Made it here")}
+        Anecdote with most votes
+      </h1>
+      <p>
+        {console.log(votes)}
+        <DisplayAnecdote text={anecdotes[maxIndex]} votes={votes[maxIndex]}/>
+      </p>
+    </>
   )
 }
 
