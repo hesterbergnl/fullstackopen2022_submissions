@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+// import axios from 'axios'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
+import personService from './services/personService.js'
 
 
 const App = () => {
@@ -13,11 +14,10 @@ const App = () => {
 
   useEffect(() => {
     console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
+    personService.getAll()
+      .then(personsList => {
         console.log('promise fulfilled')
-        setPersons(response.data)
+        setPersons(personsList)
       })
   }, [])
 
@@ -36,25 +36,65 @@ const App = () => {
   const addNewName = (event) => {
     event.preventDefault()
 
-    var index = persons.findIndex(person => person.name === newName)
+    const p = persons.find(person => person.name === newName)
 
-    if(index === -1) {
+    if(typeof p === "undefined") {
       var newPerson = {
         name: newName,
         number: newNumber,
-        id: persons.length + 1,
       }
 
-      setPersons(persons.concat(newPerson))
-      setNewName('')
-      setNewNumber('')
+      personService.create(newPerson)
+        .then(returnedPerson => {
+          setPersons(persons.concat(returnedPerson))
+          setNewName('')
+          setNewNumber('')
+        })
     }
     else {
-      alert(`${newName} is already added to phonebook`)
+      const id = p.id
+
+      if (p.number === newNumber) {
+        alert(`${newName} exists in the phonebook with the number ${newNumber}, no changes made`)
+      }
+      else {
+        if (window.confirm(`${newName} exists in the phone, update phone number with ${newNumber}?`)) {
+
+          const updatedPerson = {...p, number: newNumber}
+
+          console.log(updatedPerson)
+
+          personService.update(p.id, updatedPerson)
+          .then(returnedPerson => {
+            setPersons(persons.map(per => per.id !== id ? per : returnedPerson))
+            setNewName('')
+            setNewNumber('')
+          })
+          .catch(error => {
+            alert(`Error updating server entry for ${newName}`)
+            setPersons(persons.filter(p => p.id !== id))
+          })
+        }
+      }
     }
   }
 
   const personsToShow = (filter === '') ? persons : persons.filter(person => person.name.toLowerCase().includes(filter.toLowerCase()))
+
+  const deleteMeMethod = (id) => {
+    console.log(`need to delete: ${id}`)
+
+    const lostSoul = persons.find(person => person.id === id)
+
+    if(window.confirm(`Continue to delete ${lostSoul.name}?`)) {
+      personService.deleteItem(id)
+      .then(deletedItem => {
+        // console.log(deletedItem)
+        const oneLessPersons = persons.filter(person => person.id !== id)
+        setPersons(oneLessPersons)
+      })
+    }
+  }
 
   return (
     <div>
@@ -68,7 +108,7 @@ const App = () => {
 
       <h2>Numbers</h2>
 
-      {personsToShow.map(person => <Persons key={person.id} person={person} />)}
+      {personsToShow.map(person => <Persons key={person.id} person={person} deleteMethod={() => deleteMeMethod(person.id)}/>)}
 
     </div>
   )
