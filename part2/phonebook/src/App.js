@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
+import Notification from './components/Notification'
 import personService from './services/personService.js'
 
 
@@ -11,6 +12,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [errorMessage, setErrorMessage] = useState(null)
+  const [errorFlag, setErrorFlag] = useState(true)
 
   useEffect(() => {
     console.log('effect')
@@ -47,6 +50,13 @@ const App = () => {
       personService.create(newPerson)
         .then(returnedPerson => {
           setPersons(persons.concat(returnedPerson))
+          setErrorFlag(false)
+          setErrorMessage(
+            `Added ${newName}`
+          )
+          setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
           setNewName('')
           setNewNumber('')
         })
@@ -58,7 +68,7 @@ const App = () => {
         alert(`${newName} exists in the phonebook with the number ${newNumber}, no changes made`)
       }
       else {
-        if (window.confirm(`${newName} exists in the phone, update phone number with ${newNumber}?`)) {
+        if (window.confirm(`${newName} exists in the phonebook, update phone number with ${newNumber}?`)) {
 
           const updatedPerson = {...p, number: newNumber}
 
@@ -71,7 +81,13 @@ const App = () => {
             setNewNumber('')
           })
           .catch(error => {
-            alert(`Error updating server entry for ${newName}`)
+            setErrorFlag(true)
+            setErrorMessage(
+              `Information of ${newName} has already been removed from server`
+            )
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
             setPersons(persons.filter(p => p.id !== id))
           })
         }
@@ -103,6 +119,8 @@ const App = () => {
       <Filter filter={filter} updateFilter={updateFilter} />
 
       <h2>Add New </h2>
+
+      <Notification message={errorMessage} errorFlag={errorFlag}/>
 
       <PersonForm addNewName={addNewName} newName={newName} updateNewName={updateNewName} newNumber={newNumber} updateNewNumber={updateNewNumber}/>
 
