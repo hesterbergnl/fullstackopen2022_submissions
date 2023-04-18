@@ -61,9 +61,9 @@ const App = () => {
           setNewNumber('')
         })
         .catch(error => {
+          console.log(error)
           setErrorFlag(true)
-          setErrorMessage(
-            `${error.response.data.error}`
+          setErrorMessage(`${error.response.data.error}`
           )
         })
     }
