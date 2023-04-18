@@ -60,6 +60,12 @@ const App = () => {
           setNewName('')
           setNewNumber('')
         })
+        .catch(error => {
+          setErrorFlag(true)
+          setErrorMessage(
+            `${error.response.data.error}`
+          )
+        })
     }
     else {
       const id = p.id

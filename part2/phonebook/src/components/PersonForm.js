@@ -2,7 +2,7 @@ const PersonForm = (props) => {
   return (
     <form onSubmit={props.addNewName}>
       <div>
-        name: <input value={props.newName} onChange={props.updateNewName} />
+        name: <textarea value={props.newName} onChange={props.updateNewName} />
       </div>
       <div>
         number: <input value={props.newNumber} onChange={props.updateNewNumber} />
